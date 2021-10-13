@@ -50,6 +50,15 @@ class TodoList {
 document.addEventListener("DOMContentLoaded", () => {
     todoList = new TodoList();
     document.getElementById("add-todo-button").addEventListener("click", addTodoClick);
+
+    let today = new Date();
+    const dd = String(today.getDate()).padStart(2, '0');
+    const mm = String(today.getMonth() + 1).padStart(2, '0');
+    const yyyy = today.getFullYear();
+
+    today = mm + '/' + dd + "/" + yyyy;
+
+    document.getElementById('todays-date').innerHTML = today;
 });
 
 const addTodoClick = (event) => {
