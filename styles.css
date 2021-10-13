@@ -1,3 +1,52 @@
 .todo-item.checked {
     text-decoration: line-through;
+    color: #ccc;
+}
+
+.todo-item.checked .todo-check {
+    color: #ccc !important;
+}
+
+.todo-check {
+    margin-right: 10px;
+}
+
+.page {
+    width: 60%;
+    margin: 20px auto;
+}
+
+.hero {
+    height: 20vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.body {
+    height: 60vh;
+    padding: 20px;
+}
+
+.body ul {
+    list-style: none;
+    padding-left: 0;
+}
+
+.add-todo-container {
+    display: flex;
+    padding: 20px;
+}
+
+.add-todo-container a {
+    line-height: 100%;
+    font-size: 32px;
+    font-weight: bold;
+}
+
+.add-todo-container input {
+    flex-grow: 1;
+    border: none;
+    border-bottom: 1px solid #495057;
+    border-radius: 0px;
 }

@@ -18,8 +18,8 @@
 
 <body>
     <!-- your content here... -->
-    <div class="container page">
-        <section class="hero">
+    <div class="page border rounded shadow">
+        <section class="hero bg-dark text-white">
             <h1>Hero</h1>
             <p class="lead"><span id="todays-date"></span></p>
         </section>
@@ -28,12 +28,11 @@
         </section>
         <section class="add-todo">
             <div class="add-todo-container">
-                <a href="#" id="add-todo-button">+</a>
-                <input type="text" id="todo-text">
+                <a href="#" class="text-danger" id="add-todo-button">+</a>
+                <input type="text" placeholder="Add task..." class="form-control" id="todo-text">
             </div>
         </section>
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="scripts.js"></script>
 </body>
 
