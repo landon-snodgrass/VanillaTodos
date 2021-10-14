@@ -1,3 +1,17 @@
+.todo-item {
+    border-bottom: 1px solid #ccc;
+    display: flex;
+    align-items: center;
+}
+
+.todo-item .controls {
+    margin-left: auto;
+}
+
+.todo-item .controls a:first-child {
+    margin-right: 10px;
+}
+
 .todo-item.checked {
     text-decoration: line-through;
     color: #ccc;
