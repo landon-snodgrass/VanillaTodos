@@ -59,6 +59,9 @@ class TodoList {
         this.currentIndex++;
 
         this.element.innerHTML += newTodo.template;
+
+        document.getElementById("todo-text").setAttribute("edit", "");
+        document.getElementById("add-todo-button").setAttribute("edit", "");
     }
 
     deleteTodo(todoId) {
@@ -68,13 +71,16 @@ class TodoList {
 
     editTodo(todoId) {
         document.getElementById("todo-text").value = this.todoList[todoId].text;
+        document.getElementById("todo-text").setAttribute("edit", todoId);
         document.getElementById("add-todo-button").setAttribute("edit", todoId);
     }
 }
 
 document.addEventListener("DOMContentLoaded", () => {
     todoList = new TodoList();
-    document.getElementById("add-todo-button").addEventListener("click", addTodoClick);
+    const todoInput = document.getElementById('todo-text');
+    const addTodoButton = document.getElementById('add-todo-button');
+    addTodoButton.addEventListener("click", addTodoClick);
 
     let today = new Date();
     const dd = String(today.getDate()).padStart(2, '0');
@@ -84,7 +90,32 @@ document.addEventListener("DOMContentLoaded", () => {
     today = mm + '/' + dd + "/" + yyyy;
 
     document.getElementById('todays-date').innerHTML = today;
+
+    document.addEventListener('keydown', (event) => {
+        const activeEl = document.activeElement;
+        if (todoInput == activeEl && event.key == "Enter") {
+            addTodoEnter(todoInput);
+        }
+    })
 });
+
+const addTodoEnter = (todoInput) => {
+    const edit = todoInput.getAttribute("edit");
+    const todoText = todoInput.value;
+
+    if (todoText == "") {
+        console.log("Error");
+        return;
+    }
+
+    if (edit && edit != "") {
+        todoList.deleteTodo(edit);
+    }
+
+    todoList.addTodo(todoText);
+
+    todoInput.value = "";
+}
 
 const addTodoClick = (event) => {
     const edit = event.target.getAttribute("edit");
