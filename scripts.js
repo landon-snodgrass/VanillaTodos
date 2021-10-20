@@ -4,7 +4,7 @@ let todoList;
 
 class Todo {
     constructor(todoText, id) {
-        this.template = `<li class="todo-item" id="todo-item-${id}"><a href="#" class="todo-check text-danger" id="todo-check-${id}" data-id="${id}"><i class="far fa-circle todo-item-checkbox" id="todo-item-checkbox-${id}"></i></a><span class="todo-item-text">${todoText}</span><span class="controls"><a href="#" class="delete-todo" data-id="${id}""><i class="fas fa-trash"></i></a><a href="#" class="edit-todo" data-id="${id}"><i class="fas fa-edit"></i></a></span></li>`;
+        this.template = `<li class="todo-item" draggable="true" id="todo-item-${id}"><a href="#" class="todo-check text-danger" id="todo-check-${id}" data-id="${id}"><i class="far fa-circle todo-item-checkbox" id="todo-item-checkbox-${id}"></i></a><span class="todo-item-text">${todoText}</span><span class="controls"><a href="#" class="delete-todo" data-id="${id}""><i class="fas fa-trash"></i></a><a href="#" class="edit-todo" data-id="${id}"><i class="fas fa-edit"></i></a></span></li>`;
         this.completed = false;
         this.text = todoText;
         this.id = id
