@@ -172,8 +172,6 @@ const addTodoClick = (event) => {
     const edit = event.target.getAttribute("edit");
     const todoText = document.getElementById("todo-text").value;
 
-    console.log(edit);
-
     if (todoText == "") {
         console.log("Error");
         return;
