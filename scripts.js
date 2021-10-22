@@ -3,18 +3,74 @@ const checkedIconClass = "fas fa-circle";
 let todoList;
 
 class Todo {
-    constructor(todoText, id) {
-        this.template = `<li class="todo-item" draggable="true" id="todo-item-${id}"><a href="#" class="todo-check text-danger" id="todo-check-${id}" data-id="${id}"><i class="far fa-circle todo-item-checkbox" id="todo-item-checkbox-${id}"></i></a><span class="todo-item-text">${todoText}</span><span class="controls"><a href="#" class="delete-todo" data-id="${id}""><i class="fas fa-trash"></i></a><a href="#" class="edit-todo" data-id="${id}"><i class="fas fa-edit"></i></a></span></li>`;
+    constructor(todoText, id, parentTodoList) {
+        this.parentTodoList = parentTodoList;
         this.completed = false;
         this.text = todoText;
         this.id = id
+
+        // Creating the li container
+        this.element = document.createElement("li");
+        this.element.classList += "todo-item";
+        this.element.id = `todo-item-${id}`;
+        this.element.setAttribute("draggable", "true");
+        // Creating the checkbox
+        this.checkbox = document.createElement("a");
+        this.checkbox.classList += "todo-check text-danger";
+        this.checkbox.id = `todo-check-${id}`;
+        this.checkbox.dataset.id = `${id}`;
+        this.checkbox.innerHTML = `<i class="far fa-circle todo-item-checkbox" id="todo-item-checkbox-${id}"></i>`
+
+        // Creating the text
+        this.todoText = document.createElement("span");
+        this.todoText.classList += "todo-item-text";
+        this.todoText.innerHTML = todoText;
+        // Creating the controls 
+        this.controls = document.createElement("span");
+        this.controls.classList += "controls";
+        // Creating the delete button
+        this.deleteButton = document.createElement("a");
+        this.deleteButton.classList += "delete-todo";
+        this.deleteButton.href = "#";
+        this.deleteButton.dataset.id = `${id}`;
+        this.deleteButton.innerHTML = '<i class="fas fa-trash"></i>';
+
+        // Creating the edit button
+        this.editButton = document.createElement("a");
+        this.editButton.classList += "edit-todo";
+        this.editButton.href = "#";
+        this.editButton.dataset.id = `${id}`;
+        this.editButton.innerHTML = `<i class="fas fa-edit"></i>`;
+
+        // Putting it all together
+        this.controls.appendChild(this.deleteButton);
+        this.controls.appendChild(this.editButton);
+
+        // Event listeners
+        this.checkbox.addEventListener("click", () => {
+            this.checkUncheck();
+        });
+
+        this.deleteButton.addEventListener("click", () => {
+            this.parentTodoList.deleteTodo(this.id);
+        });
+
+        this.editButton.addEventListener("click", () => {
+            this.parentTodoList.editTodo(this.id);
+        });
+
+        this.element.appendChild(this.checkbox);
+        this.element.appendChild(this.todoText);
+        this.element.appendChild(this.controls);
+
+
     }
 
-    getTodoElement = () => document.getElementById(`todo-item-${this.id}`);
+    getTodoElement = () => this.element;
 
-    getCheckbox = () => document.getElementById(`todo-check-${this.id}`);
+    getCheckbox = () => this.checkbox;
 
-    getCheckboxIcon = () => document.getElementById(`todo-item-checkbox-${this.id}`);
+    getCheckboxIcon = () => this.checkbox.querySelector("i");
 
     checkUncheck = () => {
         this.completed = !this.completed;
@@ -31,34 +87,29 @@ class TodoList {
         this.element = document.getElementById("todo-list");
         this.currentIndex = 0;
 
-        // Event delegation
-        this.element.addEventListener("click", (event) => {
-            // Check/Uncheck todo item
-            if (event.target.parentElement && event.target.parentElement.matches("a.todo-check")) {
-                this.todoList[event.target.parentElement.dataset.id].checkUncheck();
-            }
+        this.currentDragElement = null;
 
-            // Delete todo item
-            if (event.target.parentElement && event.target.parentElement.matches("a.delete-todo")) {
-                const todoId = event.target.parentElement.dataset.id;
-                this.deleteTodo(todoId);
-            }
+        // // Event delegation for drag
+        // this.element.addEventListener("dragstart", (event) => {
+        //     this.currentDragElement = event.currentTarget;
+        //     this.currentDragElement.style = "opacity: 0.3";
+        //     console.log(this.currentDragElement);
+        // });
 
-            // Edit todo item
-            if (event.target.parentElement && event.target.parentElement.matches("a.edit-todo")) {
-                const todoId = event.target.parentElement.dataset.id;
-                this.editTodo(todoId);
-            }
-        })
+        // this.element.addEventListener("dragend", (event) => {
+        //     if (this.currentDragElement) {
+        //         this.currentDragElement.style = "opacity: 1";
+        //     }
+        // })
     }
 
     addTodo(todoText) {
-        let newTodo = new Todo(todoText, this.currentIndex);
+        let newTodo = new Todo(todoText, this.currentIndex, this);
         this.todoList[this.currentIndex] = newTodo;
 
         this.currentIndex++;
 
-        this.element.innerHTML += newTodo.template;
+        this.element.appendChild(newTodo.element);
 
         document.getElementById("todo-text").setAttribute("edit", "");
         document.getElementById("add-todo-button").setAttribute("edit", "");
