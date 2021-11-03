@@ -64,6 +64,9 @@ class Todo {
         this.element.appendChild(this.todoText);
         this.element.appendChild(this.controls);
 
+        // Switching the listeners to that actual todo object
+        // there's still a weird bug where the first todo gets it's dragenter
+        // event called when you drag the 3rd one so I have to fix that
         this.element.addEventListener("dragstart", (event) => {
             this.parentTodoList.currentDragElement = this.element;
             this.element.style = "opacity: 0.3";
