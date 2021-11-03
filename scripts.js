@@ -64,11 +64,27 @@ class Todo {
         this.element.appendChild(this.todoText);
         this.element.appendChild(this.controls);
 
-        const reorderList = new CustomEvent('reorderlist', { detail: this.id });
+        this.element.addEventListener("dragstart", (event) => {
+            this.parentTodoList.currentDragElement = this.element;
+            this.element.style = "opacity: 0.3";
+        });
+
+        this.element.addEventListener("dragend", (event) => {
+            this.parentTodoList.currentDragElement = null;
+            this.element.style = "opacity: 1";
+        });
 
         this.element.addEventListener("dragenter", (event) => {
-            this.parentTodoList.reorderList(this.id);
-        });
+            this.parentTodoList.todoDragEnter(this.id);
+        }, false);
+
+        this.element.addEventListener("dragleave", (event) => {
+            console.log(this.id, " has been left");
+        })
+
+        this.element.addEventListener("dragover", (event) => {
+            event.preventDefault();
+        }, false);
     }
 
     getTodoElement = () => this.element;
@@ -101,17 +117,17 @@ class TodoList {
         this.currentDragElement = null;
 
         // Event delegation for drag
-        this.element.addEventListener("dragstart", (event) => {
-            this.currentDragElement = event.target;
-            this.currentDragElement.style = "opacity: 0.3";
-        });
+        // this.element.addEventListener("dragstart", (event) => {
+        //     this.currentDragElement = event.target;
+        //     this.currentDragElement.style = "opacity: 0.3";
+        // });
 
-        this.element.addEventListener("dragend", (event) => {
-            if (this.currentDragElement) {
-                this.currentDragElement.style = "opacity: 1";
-                this.currentDragElement = null;
-            }
-        });
+        // this.element.addEventListener("dragend", (event) => {
+        //     if (this.currentDragElement) {
+        //         this.currentDragElement.style = "opacity: 1";
+        //         this.currentDragElement = null;
+        //     }
+        // });
 
         // this.element.addEventListener("dragover", (event) => {
         //     event.preventDefault();
@@ -133,36 +149,43 @@ class TodoList {
     }
 
     refreshListDisplay() {
-        console.log("Refresh display");
         this.element.innerHTML = "";
         this.sortList();
-        console.log(this.todoList);
         this.todoList.forEach(todo => {
             this.element.appendChild(todo.element);
         });
+    }
+
+    todoDragEnter(todoId) {
+        console.log(todoId, " has been entered by ", this.currentDragElement.id);
+        const underTodoId = Todo.convertElementIdToId(this.currentDragElement.id);
+
     }
 
     reorderList(todoId) {
         const overTodoId = Todo.convertElementIdToId(this.currentDragElement.id);
         if (overTodoId == todoId) {
             // We're in the same spot
+            console.log("same spot");
         } else {
             // We're in a different spot
             const overTodo = this.getTodo(overTodoId);
             const underTodo = this.getTodo(todoId);
             console.log(overTodo.position, " ", underTodo.position);
             if (overTodo.position < underTodo.position) {
+                console.log("---FROM ABOVE---");
                 overTodo.position = underTodo.position;
-                underTodo.position--;
+                underTodo.position = overTodo.position - 1;
                 this.setTodo(overTodo.id, overTodo);
                 this.setTodo(underTodo.id, underTodo);
                 this.refreshListDisplay();
             } else if (overTodo.position > underTodo.position) {
-                overTodo.position = underTodo.position;
-                underTodo.position++;
-                this.setTodo(overTodo.id, overTodo);
-                this.setTodo(underTodo.id, underTodo);
-                this.refreshListDisplay();
+                console.log("---FROM BELOW---");
+                // overTodo.position = underTodo.position;
+                // underTodo.position = overTodo.position + 1;
+                // this.setTodo(overTodo.id, overTodo);
+                // this.setTodo(underTodo.id, underTodo);
+                // this.refreshListDisplay();
             } else {
                 console.log("I, the auspicious developer, does not know why this console log has happened. It should theoretically be impossible for this line of code to run.");
             }
@@ -173,8 +196,6 @@ class TodoList {
         this.todoList.forEach(todo => {
             if (todo.id == todoId) {
                 todo = newTodoData;
-                console.log("Successfully set todo");
-                console.log(todo);
                 return;
             }
         });
