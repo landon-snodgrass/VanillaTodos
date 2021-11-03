@@ -3,11 +3,12 @@ const checkedIconClass = "fas fa-circle";
 let todoList;
 
 class Todo {
-    constructor(todoText, id, parentTodoList) {
+    constructor(todoText, id, parentTodoList, position) {
         this.parentTodoList = parentTodoList;
         this.completed = false;
         this.text = todoText;
         this.id = id
+        this.position = position;
 
         // Creating the li container
         this.element = document.createElement("li");
@@ -63,7 +64,11 @@ class Todo {
         this.element.appendChild(this.todoText);
         this.element.appendChild(this.controls);
 
+        const reorderList = new CustomEvent('reorderlist', { detail: this.id });
 
+        this.element.addEventListener("dragover", (event) => {
+            this.parentTodoList.reorderList(this.id);
+        });
     }
 
     getTodoElement = () => this.element;
@@ -79,32 +84,74 @@ class Todo {
         this.getTodoElement().classList = classList;
         this.getCheckboxIcon().classList = iconClassList;
     }
+
+    static convertElementIdToId(elementId) {
+        const charArray = elementId.split('');
+        return charArray[charArray.length - 1];
+    }
 }
 
 class TodoList {
     constructor() {
-        this.todoList = {};
+        this.todoList = [];
         this.element = document.getElementById("todo-list");
         this.currentIndex = 0;
+        this.currentPosition = 0;
 
         this.currentDragElement = null;
 
-        // // Event delegation for drag
-        // this.element.addEventListener("dragstart", (event) => {
-        //     this.currentDragElement = event.currentTarget;
-        //     this.currentDragElement.style = "opacity: 0.3";
-        //     console.log(this.currentDragElement);
-        // });
+        // Event delegation for drag
+        this.element.addEventListener("dragstart", (event) => {
+            this.currentDragElement = event.target;
+            this.currentDragElement.style = "opacity: 0.3";
+        });
 
-        // this.element.addEventListener("dragend", (event) => {
-        //     if (this.currentDragElement) {
-        //         this.currentDragElement.style = "opacity: 1";
+        this.element.addEventListener("dragend", (event) => {
+            if (this.currentDragElement) {
+                this.currentDragElement.style = "opacity: 1";
+                this.currentDragElement = null;
+            }
+        });
+
+        // this.element.addEventListener("dragover", (event) => {
+        //     event.preventDefault();
+        //     const overBox = event.target.getBoundingClientRect().top;
+
+        //     const dragPosition = event.pageY;
+        //     if (overBox > dragPosition) {
+        //         console.log("Below");
+        //     } else {
+        //         console.log("What?");
         //     }
         // })
     }
 
+    sortList() {
+        this.todoList.sort((a, b) => {
+            a.position === b.position ? 0 : a.position > b.position ? -1 : 1;
+        });
+    }
+
+    refreshListDisplay() {
+        this.element.innerHTML = "";
+        this.sortList();
+        for (todo in this.todoList) {
+            this.element.appendChild(todo.element);
+        }
+    }
+
+    reorderList(todoId) {
+        console.log(Todo.convertElementIdToId(this.currentDragElement.id));
+        if (this.currentDragElement.id == "todo-item-" + todoId) {
+            // We're in the same spot
+        } else {
+            // We're in a different spot
+            const overTodo = this.getTodo
+        }
+    }
+
     addTodo(todoText) {
-        let newTodo = new Todo(todoText, this.currentIndex, this);
+        let newTodo = new Todo(todoText, this.currentIndex, this, this.currentPosition);
         this.todoList[this.currentIndex] = newTodo;
 
         this.currentIndex++;
@@ -124,6 +171,16 @@ class TodoList {
         document.getElementById("todo-text").value = this.todoList[todoId].text;
         document.getElementById("todo-text").setAttribute("edit", todoId);
         document.getElementById("add-todo-button").setAttribute("edit", todoId);
+    }
+
+    // Can overload with other stuff
+    getTodo(todoId) {
+        for (todo in this.todoList) {
+            if (todo.id == todoId) {
+                return todo;
+            }
+        }
+        return null;
     }
 }
 
