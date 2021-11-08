@@ -3,16 +3,19 @@ const checkedIconClass = "fas fa-circle";
 let todoList;
 
 class Todo {
-    constructor(todoText, id, parentTodoList, position) {
+    constructor(todoText, id, parentTodoList, position, checked = false) {
         this.parentTodoList = parentTodoList;
-        this.completed = false;
+        this.completed = checked;
         this.text = todoText;
         this.id = id
         this.position = position;
 
+        const todoClassList = this.completed ? "todo-item checked" : "todo-item";
+        const iconClassList = this.completed ? "fas fa-circle todo-item-checkbox" : "far fa-circle todo-item-checkbox";
+
         // Creating the li container
         this.element = document.createElement("li");
-        this.element.classList += "todo-item";
+        this.element.classList = todoClassList;
         this.element.id = `todo-item-${id}`;
         this.element.setAttribute("draggable", "true");
         // Creating the checkbox
@@ -20,7 +23,7 @@ class Todo {
         this.checkbox.classList += "todo-check text-danger";
         this.checkbox.id = `todo-check-${id}`;
         this.checkbox.dataset.id = `${id}`;
-        this.checkbox.innerHTML = `<i class="far fa-circle todo-item-checkbox" id="todo-item-checkbox-${id}"></i>`
+        this.checkbox.innerHTML = `<i class="${iconClassList}" id="todo-item-checkbox-${id}"></i>`
 
         // Creating the text
         this.todoText = document.createElement("span");
@@ -100,6 +103,14 @@ class Todo {
         this.getCheckboxIcon().classList = iconClassList;
     }
 
+    toJson = () => {
+        return {
+            "position": this.position,
+            "text": this.text,
+            "checked": this.completed,
+        }
+    }
+
     static convertElementIdToId(elementId) {
         const charArray = elementId.split('');
         return charArray[charArray.length - 1];
@@ -114,31 +125,6 @@ class TodoList {
         this.currentPosition = 0;
 
         this.currentDragElement = null;
-
-        // Event delegation for drag
-        // this.element.addEventListener("dragstart", (event) => {
-        //     this.currentDragElement = event.target;
-        //     this.currentDragElement.style = "opacity: 0.3";
-        // });
-
-        // this.element.addEventListener("dragend", (event) => {
-        //     if (this.currentDragElement) {
-        //         this.currentDragElement.style = "opacity: 1";
-        //         this.currentDragElement = null;
-        //     }
-        // });
-
-        // this.element.addEventListener("dragover", (event) => {
-        //     event.preventDefault();
-        //     const overBox = event.target.getBoundingClientRect().top;
-
-        //     const dragPosition = event.pageY;
-        //     if (overBox > dragPosition) {
-        //         console.log("Below");
-        //     } else {
-        //         console.log("What?");
-        //     }
-        // })
     }
 
     sortList() {
@@ -148,11 +134,14 @@ class TodoList {
     }
 
     refreshListDisplay() {
+        console.log("Refresh display ", this.todoList);
         this.element.innerHTML = "";
         this.sortList();
         this.todoList.forEach(todo => {
             this.element.appendChild(todo.element);
         });
+
+        this.saveTodoList();
     }
 
     todoDragEnter(underTodoId) {
@@ -171,7 +160,6 @@ class TodoList {
     reorderList(underTodo, overTodo) {
         if (overTodo.position == underTodo.position) {
             // We're in the same spot
-            console.log("same spot");
         } else {
             // We're in a different spot
             if (overTodo.position < underTodo.position) {
@@ -199,10 +187,11 @@ class TodoList {
                 return;
             }
         });
+
+        this.saveTodoList();
     }
 
     addTodo(todoText) {
-        console.log("New todo position = ", this.currentPosition);
         let newTodo = new Todo(todoText, this.currentIndex, this, this.currentPosition);
         this.todoList[this.currentIndex] = newTodo;
 
@@ -212,17 +201,29 @@ class TodoList {
 
         document.getElementById("todo-text").setAttribute("edit", "");
         document.getElementById("add-todo-button").setAttribute("edit", "");
+
+        this.saveTodoList();
+    }
+
+    loadTodo(todoText, todoIndex, todoPosition, todoChecked) {
+        let newTodo = new Todo(todoText, todoIndex, this, todoPosition, todoChecked);
+        this.todoList[todoIndex] = newTodo;
+        console.log(newTodo);
     }
 
     deleteTodo(todoId) {
         this.todoList[todoId].getTodoElement().remove();
         delete this.todoList[todoId];
+
+        this.saveTodoList();
     }
 
     editTodo(todoId) {
         document.getElementById("todo-text").value = this.todoList[todoId].text;
         document.getElementById("todo-text").setAttribute("edit", todoId);
         document.getElementById("add-todo-button").setAttribute("edit", todoId);
+
+        this.saveTodoList();
     }
 
     // Can overload with other stuff
@@ -238,10 +239,42 @@ class TodoList {
         });
         return retTodo;
     }
+
+    saveTodoList() {
+        let todoListJson = {};
+        this.todoList.forEach(todo => {
+            todoListJson[todo.id] = todo.toJson();
+        });
+
+        const saveJson = {
+            "testTodoList": todoListJson
+        }
+
+        // Send saveJson off to firebase
+
+        const saveJsonString = JSON.stringify(saveJson);
+
+        window.localStorage.clear();
+        window.localStorage.setItem("todo-list", saveJsonString);
+    }
+
+    loadTodoList() {
+        const newTodoListData = JSON.parse(window.localStorage.getItem("todo-list"));
+        if (newTodoListData) {
+            console.log(newTodoListData);
+            const newTodoList = newTodoListData["testTodoList"];
+            for (const todo in newTodoList) {
+                this.loadTodo(newTodoList[todo].text, todo, newTodoList[todo].position, newTodoList[todo].checked);
+            }
+
+            this.refreshListDisplay();
+        }
+    }
 }
 
 document.addEventListener("DOMContentLoaded", () => {
     todoList = new TodoList();
+    todoList.loadTodoList();
     const todoInput = document.getElementById('todo-text');
     const addTodoButton = document.getElementById('add-todo-button');
     addTodoButton.addEventListener("click", addTodoClick);
