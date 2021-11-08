@@ -81,10 +81,6 @@ class Todo {
             this.parentTodoList.todoDragEnter(this.id);
         }, false);
 
-        this.element.addEventListener("dragleave", (event) => {
-            console.log(this.id, " has been left");
-        })
-
         this.element.addEventListener("dragover", (event) => {
             event.preventDefault();
         }, false);
@@ -159,36 +155,37 @@ class TodoList {
         });
     }
 
-    todoDragEnter(todoId) {
-        console.log(todoId, " has been entered by ", this.currentDragElement.id);
-        const underTodoId = Todo.convertElementIdToId(this.currentDragElement.id);
+    todoDragEnter(underTodoId) {
+        const overTodoId = Todo.convertElementIdToId(this.currentDragElement.id);
+        const underTodo = this.getTodo(underTodoId);
+        const overTodo = this.getTodo(overTodoId);
 
+        if (Math.abs(underTodo.position - overTodo.position) > 1) {
+            // This is that weird bug where the dragenter event of a todo two spots above fires
+            return;
+        }
+
+        this.reorderList(underTodo, overTodo);
     }
 
-    reorderList(todoId) {
-        const overTodoId = Todo.convertElementIdToId(this.currentDragElement.id);
-        if (overTodoId == todoId) {
+    reorderList(underTodo, overTodo) {
+        if (overTodo.position == underTodo.position) {
             // We're in the same spot
             console.log("same spot");
         } else {
             // We're in a different spot
-            const overTodo = this.getTodo(overTodoId);
-            const underTodo = this.getTodo(todoId);
-            console.log(overTodo.position, " ", underTodo.position);
             if (overTodo.position < underTodo.position) {
-                console.log("---FROM ABOVE---");
                 overTodo.position = underTodo.position;
                 underTodo.position = overTodo.position - 1;
                 this.setTodo(overTodo.id, overTodo);
                 this.setTodo(underTodo.id, underTodo);
                 this.refreshListDisplay();
             } else if (overTodo.position > underTodo.position) {
-                console.log("---FROM BELOW---");
-                // overTodo.position = underTodo.position;
-                // underTodo.position = overTodo.position + 1;
-                // this.setTodo(overTodo.id, overTodo);
-                // this.setTodo(underTodo.id, underTodo);
-                // this.refreshListDisplay();
+                overTodo.position = underTodo.position;
+                underTodo.position = overTodo.position + 1;
+                this.setTodo(overTodo.id, overTodo);
+                this.setTodo(underTodo.id, underTodo);
+                this.refreshListDisplay();
             } else {
                 console.log("I, the auspicious developer, does not know why this console log has happened. It should theoretically be impossible for this line of code to run.");
             }
