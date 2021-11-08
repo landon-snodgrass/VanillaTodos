@@ -1,3 +1,20 @@
+// Add todo is broken with firebase because it's adding it at "current index" which is instantiated to 0
+
+// Firebase stuff
+const firebaseConfig = {
+    apiKey: "AIzaSyAecJFhhNfMEXELKimn0qtlRx9afu3RPuM",
+    authDomain: "vanilla-todos-a3f87.firebaseapp.com",
+    databaseURL: "https://vanilla-todos-a3f87-default-rtdb.firebaseio.com",
+    projectId: "vanilla-todos-a3f87",
+    storageBucket: "vanilla-todos-a3f87.appspot.com",
+    messagingSenderId: "1029295568455",
+    appId: "1:1029295568455:web:fc5117c71b14134cd2a362"
+};
+
+firebase.initializeApp(firebaseConfig);
+
+const db = firebase.database();
+
 const uncheckedIconClass = "far fa-circle";
 const checkedIconClass = "fas fa-circle";
 let todoList;
@@ -251,6 +268,7 @@ class TodoList {
         }
 
         // Send saveJson off to firebase
+        db.ref('testTodoList/').set(saveJson);
 
         const saveJsonString = JSON.stringify(saveJson);
 
