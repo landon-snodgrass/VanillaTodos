@@ -20,11 +20,13 @@ const checkedIconClass = "fas fa-circle";
 let todoList;
 
 class Todo {
-    constructor(todoText, id, parentTodoList, position, checked = false) {
+    constructor(todoText, parentTodoList, position, checked = false) {
+        const id = Date.now();
+
         this.parentTodoList = parentTodoList;
         this.completed = checked;
         this.text = todoText;
-        this.id = id
+        this.id = id;
         this.position = position;
 
         const todoClassList = this.completed ? "todo-item checked" : "todo-item";
@@ -209,10 +211,9 @@ class TodoList {
     }
 
     addTodo(todoText) {
-        let newTodo = new Todo(todoText, this.currentIndex, this, this.currentPosition);
+        let newTodo = new Todo(todoText, this, this.currentPosition);
         this.todoList[this.currentIndex] = newTodo;
 
-        this.currentIndex++;
         this.currentPosition++;
         this.element.appendChild(newTodo.element);
 
